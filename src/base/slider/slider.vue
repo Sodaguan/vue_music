@@ -1,8 +1,7 @@
 <template>
   <div class="slider" ref="slider">
     <div class="slider-group" ref="sliderGroup">
-      <slot>
-      </slot>
+      <slot></slot>
     </div>
     <div class="dots">
       <span class="dot" v-for="(item,index) in dots" :class="{active:currentPageIndex===index}"></span>
@@ -36,21 +35,20 @@
       }
     },
     methods: {
-      _setSliderWidth () {
+      _setSliderWidth (isResize) {
         // 获取$refs获取组件内部所有的dom节点
-        console.log(this.$refs)
+        // console.log(this.$refs)
         let width = 0
         let sliderWidth = this.$refs.slider.clientWidth
 
         this.children = this.$refs.sliderGroup.children
-        console.log(this.children.length)
         for (let i = 0; i < this.children.length; i++) {
           let child = this.children[i]
           addClass(child, 'slider-item')
           child.style.width = sliderWidth + 'px'
           width += sliderWidth
         }
-        if (this.loop) {
+        if (this.loop && !isResize) {
           width += 2 * sliderWidth
         }
         this.$refs.sliderGroup.style.width = width + 'px'
@@ -65,24 +63,33 @@
             threshold: 0.3,
             speed: 400
           },
+          bounce: false,
           click: true
         })
-
-        /* this.slider.on('scrollEnd',()=>{
-          let pageIndex = this.slider.get
-        }) */
+        this.slider.on('scrollEnd', () => {
+          let pageIndex = this.slider.getCurrentPage().pageX
+          this.currentPageIndex = pageIndex
+          if (this.autoPlay) {
+            this._play()
+          }
+        })
       },
       _initDots () {
         this.dots = new Array(this.children.length)
       },
       _play () {
-        let pageIndex = this.currentPageIndex + 1
-        if (this.loop) {
-          pageIndex += 1
-        }
+        clearTimeout(this.timer)
         this.timer = setTimeout(() => {
-          this.slider.goToPage(pageIndex, 0, 400)
+          this.slider.next()
         }, this.interval)
+      },
+      update () {
+        if (this.slider) {
+          this.slider.destroy()
+        }
+        this.$nextTick(() => {
+          this.init()
+        })
       }
     },
     mounted () {
@@ -95,6 +102,36 @@
           this._play()
         }
       }, 20)
+
+      window.addEventListener('resize', () => {
+        if (!this.slider) {
+          return
+        }
+        this._setSliderWidth(true)
+        this.slider.refresh()
+      })
+
+      this.slider.on('touchEnd', () => {
+        if (this.autoPlay) {
+          this._play()
+        }
+      })
+      this.slider.on('beforeScrollStart', () => {
+        if (this.autoPlay) {
+          clearTimeout(this.timer)
+        }
+      })
+    },
+    beforeDestroy () {
+      clearTimeout(this.timer)
+    },
+    watch: {
+      loop () {
+        this.update()
+      },
+      autoPlay () {
+        this.update()
+      }
     }
   }
 </script>
