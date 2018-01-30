@@ -66,6 +66,11 @@
           bounce: false,
           click: true
         })
+        this.slider.on('beforeScrollStart', () => {
+          if (this.autoPlay) {
+            clearTimeout(this.timer)
+          }
+        })
         this.slider.on('scrollEnd', () => {
           let pageIndex = this.slider.getCurrentPage().pageX
           this.currentPageIndex = pageIndex
@@ -82,22 +87,14 @@
         this.timer = setTimeout(() => {
           this.slider.next()
         }, this.interval)
-      },
-      update () {
-        if (this.slider) {
-          this.slider.destroy()
-        }
-        this.$nextTick(() => {
-          this.init()
-        })
       }
     },
     mounted () {
       // 经验值，浏览器刷新17毫秒，所以设置为20毫秒
       setTimeout(() => {
         this._setSliderWidth()
-        this._initDots()
         this._initSlider()
+        this._initDots()
         if (this.autoPlay) {
           this._play()
         }
@@ -110,28 +107,10 @@
         this._setSliderWidth(true)
         this.slider.refresh()
       })
-
-      this.slider.on('touchEnd', () => {
-        if (this.autoPlay) {
-          this._play()
-        }
-      })
-      this.slider.on('beforeScrollStart', () => {
-        if (this.autoPlay) {
-          clearTimeout(this.timer)
-        }
-      })
     },
+    // 在销毁组建的时候会清空定时器
     beforeDestroy () {
       clearTimeout(this.timer)
-    },
-    watch: {
-      loop () {
-        this.update()
-      },
-      autoPlay () {
-        this.update()
-      }
     }
   }
 </script>
