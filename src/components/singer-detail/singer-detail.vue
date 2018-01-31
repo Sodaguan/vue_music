@@ -1,6 +1,6 @@
 <template>
   <transition name="slide">
-    <div class="singer-detail"></div>
+    <music-list :songs="songs" :title="title" :bg-image="bgImage"></music-list>
   </transition>
 </template>
 
@@ -12,8 +12,13 @@
 
   import { getSongUrl } from 'api/song'
 
+  import MusicList from 'components/music-list/music-list'
+
   export default {
     name: 'singer-detail',
+    components: {
+      MusicList
+    },
     data () {
       return {
         songs: []
@@ -23,7 +28,16 @@
       // mapGetters 辅助函数仅仅是将 store 中的 getter 映射到局部计算属性(重点！计算属性)
       ...mapGetters([
         'singer'
-      ])
+      ]),
+      title () {
+        return this.singer.name
+      },
+      songs () {
+        return this.songs
+      },
+      bgImage () {
+        return this.singer.avatar
+      }
     },
     created () {
       // 映射完成后就可以当作组件的属性使用,并且全局都可通过vuex调用
@@ -41,6 +55,7 @@
           return
         }
         getSingerDetail(this.singer.mid).then((res) => {
+          console.log(res.data.list)
           if (res.code === ERR_OK) {
             this.songs = this._normalizeSongs(res.data.list)
             console.log(this.songs)
@@ -72,17 +87,6 @@
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
   @import "~common/stylus/variable"
-
-  .singer-detail {
-    position: fixed
-    top: 0
-    left: 0
-    right: 0
-    bottom: 0
-    background-color: $color-background
-    z-index: 100
-  }
-
   .slide-enter-active, .slide-leave-active
     transition: all 0.3s
 

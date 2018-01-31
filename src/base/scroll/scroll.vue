@@ -10,6 +10,7 @@
   export default {
     name: 'scroll',
     props: {
+      /* 值为1 2 3,3。3的话实时派发scroll事件 */
       probeType: {
         type: Number,
         default: 1
@@ -40,6 +41,7 @@
         if (this.listenScroll) {
           let me = this
           this.scroll.on('scroll', (pos) => {
+            // 这里向外广播了一个scroll，可以接受获取scroll的位置
             me.$emit('scroll', pos)
           })
         }
