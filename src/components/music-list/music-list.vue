@@ -16,7 +16,7 @@
     <div class="bg-layer" ref="layer"></div>
     <scroll class="list" ref="list" :probeType="probeType" :listenScroll="listenScroll" @scroll="scroll">
       <div>
-        <song-list class="song-list-wrapper" :songs="songs"></song-list>
+        <song-list class="song-list-wrapper" :songs="songs" @select="select"></song-list>
       </div>
       <div class="loading-container" v-show="!songs.length">
         <loading></loading>
@@ -61,6 +61,28 @@
         return `background-image:url(${this.bgImage})`
       }
     },
+    created () {
+      this.probeType = 3
+      this.listenScroll = true
+    },
+    mounted () {
+      // 因为this.$refs.list是引用的另一个组件，要获取他的dom还需加$el
+      this.imageHeight = this.$refs.bgImage.clientHeight
+      // 因为要保证最上面留有返回按钮的一行距离
+      this.minTransalteY = -this.imageHeight + TITLE_HEIGHT
+      this.$refs.list.$el.style.top = `${this.imageHeight}px`
+    },
+    methods: {
+      scroll (pos) {
+        this.scrollY = pos.y
+      },
+      back () {
+        this.$router.back()
+      },
+      select (songs, index) {
+        console.log(songs, index)
+      }
+    },
     watch: {
       scrollY (newY) {
         // console.log(newY)
@@ -92,25 +114,6 @@
         this.$refs.bgImage.style.zIndex = zIndex
         this.$refs.bgImage.style.transform = `scale(${scale})`
       }
-    },
-    methods: {
-      scroll (pos) {
-        this.scrollY = pos.y
-      },
-      back () {
-        this.$router.back()
-      }
-    },
-    created () {
-      this.probeType = 3
-      this.listenScroll = true
-    },
-    mounted () {
-      // 因为this.$refs.list是引用的另一个组件，要获取他的dom还需加$el
-      this.imageHeight = this.$refs.bgImage.clientHeight
-      // 因为要保证最上面留有返回按钮的一行距离
-      this.minTransalteY = -this.imageHeight + TITLE_HEIGHT
-      this.$refs.list.$el.style.top = `${this.imageHeight}px`
     }
   }
 </script>
